@@ -611,6 +611,29 @@ func GPFO(origin string, host string) ORPL {
 	}
 }
 
+func loadProxyFromFile() []*url.URL {
+	var PRX []*url.URL
+	file, err := os.Open("proxy.txt")
+	if err != nil {
+		return PRX
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+		if !strings.HasPrefix(line, "http://") && !strings.HasPrefix(line, "https://") {
+			line = "http://" + line
+		}
+		if p, err := url.Parse(line); err == nil {
+			PRX = append(PRX, p)
+		}
+	}
+	return PRX
+}
+
 func runAttack(tgt string, dur int, cookie string) {
 	parsed, _ := url.Parse(tgt)
 	host := parsed.Hostname()
@@ -627,27 +650,11 @@ func runAttack(tgt string, dur int, cookie string) {
 	probeTransport := createTransport(host, useCustom)
 	attackTransport := createTransport(host, useCustom)
 
-	var PRX []*url.URL
-	file, err := os.Open("proxy.txt")
-	if err == nil {
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			line := strings.TrimSpace(scanner.Text())
-			if line == "" {
-				continue
-			}
-			if !strings.HasPrefix(line, "http://") && !strings.HasPrefix(line, "https://") {
-				line = "http://" + line
-			}
-			if p, err := url.Parse(line); err == nil {
-				PRX = append(PRX, p)
-			}
-		}
-	}
+	PRX := loadProxyFromFile()
 	if len(PRX) == 0 {
 		PRX = append(PRX, nil)
 	}
+
 	var ProxyX string
 	var proxyIPs []string
 	for _, p := range PRX {
@@ -1059,6 +1066,29 @@ func main() {
 			"status":  "started",
 			"message": "Attack started",
 			"id":      time.Now().Unix(),
+		})
+	}))
+
+	http.HandleFunc("/api/scrape", cors(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		result := RunScraper()
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":  "done",
+			"message": result,
+			"total":   GetProxyCount(),
+		})
+	}))
+
+	http.HandleFunc("/api/proxycount", cors(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]int{
+			"total": GetProxyCount(),
 		})
 	}))
 
