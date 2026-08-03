@@ -27,16 +27,15 @@
             margin-bottom:28px;
         }
         .header h1 {
-            font-weight:900;
-            font-size:3rem;
+            font-weight:300;
+            font-size:1.8rem;
             letter-spacing:1px;
             color:#f0f0f0;
             white-space:nowrap;
         }
-        .header h1 span { color:#e74c3c; font-weight:900; }
+        .header h1 span { color:#e74c3c; font-weight:400; }
         .header .status {
             font-size:0.8rem;
-            font-weight:900;
             color:#7c7c7c;
             letter-spacing:0.5px;
             white-space:nowrap;
@@ -54,7 +53,6 @@
         .info-grid {
             display:grid; grid-template-columns:1fr 1fr; gap:6px 30px;
             margin-bottom:30px; padding:0 2px; font-size:0.9rem;
-            font-weight:500;
         }
         .info-grid .item {
             display:flex; justify-content:space-between;
@@ -62,18 +60,16 @@
             word-break: break-all;
         }
         .info-grid .item .label { color:#7c7c7c; flex-shrink:0; margin-right:10px; }
-        .info-grid .item .value { color:#e0e0e0; font-weight:400; text-align:right; font-weight:500; }
+        .info-grid .item .value { color:#e0e0e0; font-weight:400; text-align:right; }
         .section-title {
             font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px;
-            font-weight:900;
             color:#5c5c5c; margin:28px 0 14px 0;
             border-bottom:1px solid #1a1a1a; padding-bottom:6px;
         }
-        .form-group { margin-bottom:10px; }
+        .form-group { margin-bottom:16px; }
         .form-group label {
             display:block;
             font-size:0.8rem;
-            font-weight:500;
             color:#b0b0b0;
             margin-bottom:4px;
             letter-spacing:0.3px;
@@ -179,6 +175,14 @@
         .btn-test.error {
             border-color:#e74c3c;
             color:#e74c3c;
+        }
+        .btn-scrape {
+            background:#2a2a2a;
+            border:1px solid #3a3a3a;
+            margin-top:4px;
+        }
+        .btn-scrape:hover:not(:disabled) {
+            background:#3a3a3a;
         }
         .log-area {
             margin-top:30px;
@@ -292,6 +296,7 @@
         </div>
         <button type="submit" class="btn" id="launchBtn">Gass</button>
         <button type="button" class="btn btn-test" id="testBtn">Cek Api</button>
+        <button type="button" class="btn btn-scrape" id="scrapeBtn">Scrape Proxy</button>
     </form>
     <div class="log-area">
         <div class="log-header"><span>Output Terminal</span><span id="log-count">0 Data</span></div>
@@ -313,6 +318,7 @@
     var cookieInput = document.getElementById('cookie');
     var launchBtn = document.getElementById('launchBtn');
     var testBtn = document.getElementById('testBtn');
+    var scrapeBtn = document.getElementById('scrapeBtn');
     var toggleBtn = document.getElementById('toggleBtn');
     var toggleIcon = toggleBtn.querySelector('i');
     var statusDot = document.getElementById('statusDot');
@@ -436,6 +442,20 @@
         });
     }
 
+    function scrapeProxy() {
+        return fetch(API_URL + '/api/scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.text().then(function(text) {
+                    throw new Error('HTTP ' + response.status + ': ' + text);
+                });
+            }
+            return response.json();
+        });
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         if (!API_URL) {
@@ -492,6 +512,25 @@
 
     testBtn.addEventListener('click', testBackend);
     toggleBtn.addEventListener('click', toggleReveal);
+
+    scrapeBtn.addEventListener('click', function() {
+        if (!API_URL) {
+            addLog('Cek Api dulu!', 'error');
+            return;
+        }
+        scrapeBtn.textContent = 'Scraping...';
+        scrapeBtn.disabled = true;
+        addLog('Mulai scrape proxy...', 'system');
+        scrapeProxy().then(function(data) {
+            addLog('Scrape: ' + data.message, 'success');
+            scrapeBtn.textContent = 'Scrape Proxy';
+            scrapeBtn.disabled = false;
+        }).catch(function(error) {
+            addLog('Scrape error: ' + error.message, 'error');
+            scrapeBtn.textContent = 'Scrape Proxy';
+            scrapeBtn.disabled = false;
+        });
+    });
 
     window.addEventListener('beforeunload', function() {
         if (timerInterval) clearInterval(timerInterval);
