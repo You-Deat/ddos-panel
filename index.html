@@ -63,6 +63,10 @@
         }
         .form-group input:focus { border-color:#e74c3c; }
         .form-group input::placeholder { color:#555; }
+        .form-group input[type="password"] {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
         .btn {
             display:inline-block; width:100%; padding:12px;
@@ -79,6 +83,11 @@
         .btn-test:hover:not(:disabled) { background:#3a3a3a; }
         .btn-test.success { border-color:#2ecc71; color:#2ecc71; }
         .btn-test.error { border-color:#e74c3c; color:#e74c3c; }
+        .btn-toggle {
+            background:#1a1a1a; border:1px solid #2a2a2a; margin-top:4px;
+            font-size:0.8rem; padding:8px;
+        }
+        .btn-toggle:hover:not(:disabled) { background:#2a2a2a; }
         .log-area { margin-top:30px; border-top:1px solid #1e1e1e; padding-top:16px; }
         .log-area .log-header {
             display:flex; justify-content:space-between;
@@ -115,7 +124,7 @@
         <div class="status"><span class="dot ready" id="statusDot"></span> <span id="statusText">Ready</span></div>
     </div>
     <div class="info-grid">
-        <div class="item"><span class="label">Backend</span><span class="value" id="info-backend">—</span></div>
+        <div class="item"><span class="label">Backend</span><span class="value" id="info-backend">••••••••</span></div>
         <div class="item"><span class="label">Duration</span><span class="value" id="info-duration">—</span></div>
         <div class="item"><span class="label">Cookie</span><span class="value" id="info-cookie">—</span></div>
         <div class="item"><span class="label">Status</span><span class="value" id="info-status">—</span></div>
@@ -126,7 +135,7 @@
     <form id="attack-form">
         <div class="form-group">
             <label for="backendUrl">Backend URL</label>
-            <input type="url" id="backendUrl" name="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
+            <input type="password" id="backendUrl" name="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
         </div>
         <div class="form-group">
             <label for="target">Target</label>
@@ -143,7 +152,10 @@
             </div>
         </div>
         <button type="submit" class="btn" id="launchBtn">Gass</button>
-        <button type="button" class="btn btn-test" id="testBtn">Test Backend Connection</button>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+            <button type="button" class="btn btn-test" id="testBtn" style="flex:1;">Test Backend</button>
+            <button type="button" class="btn btn-toggle" id="toggleBtn" style="flex:0.5;">👁</button>
+        </div>
     </form>
     <div class="log-area">
         <div class="log-header"><span>Output Terminal</span><span id="log-count">0 Data</span></div>
@@ -156,6 +168,7 @@
     var isAttacking = false;
     var attackInterval = null;
     var timerInterval = null;
+    var isRevealed = false;
 
     var form = document.getElementById('attack-form');
     var backendUrlInput = document.getElementById('backendUrl');
@@ -164,6 +177,7 @@
     var cookieInput = document.getElementById('cookie');
     var launchBtn = document.getElementById('launchBtn');
     var testBtn = document.getElementById('testBtn');
+    var toggleBtn = document.getElementById('toggleBtn');
     var statusDot = document.getElementById('statusDot');
     var statusText = document.getElementById('statusText');
     var infoStatus = document.getElementById('info-status');
@@ -214,11 +228,36 @@
         }
     }
 
+    function maskUrl(url) {
+        if (!url) return '••••••••';
+        var parts = url.replace(/^https?:\/\//, '').split('.');
+        if (parts.length >= 3) {
+            return parts[0].charAt(0) + '•••••' + parts[0].slice(-1) + '.' + parts.slice(1).join('.');
+        }
+        return url.substring(0, 4) + '••••••' + url.slice(-4);
+    }
+
     function updateInfo(data) {
         infoDuration.textContent = data.duration ? data.duration + 's' : '—';
         infoCookie.textContent = data.cookie || '—';
         infoIpCooldown.textContent = data.ip_cooldown > 0 ? data.ip_cooldown + 's' : '—';
         infoIpBanned.textContent = data.ip_banned > 0 ? data.ip_banned + 's' : '—';
+        if (data.backend) {
+            infoBackend.textContent = isRevealed ? data.backend : maskUrl(data.backend);
+        }
+    }
+
+    function toggleReveal() {
+        isRevealed = !isRevealed;
+        if (isRevealed) {
+            backendUrlInput.type = 'text';
+            toggleBtn.textContent = '✕';
+            if (API_URL) infoBackend.textContent = API_URL;
+        } else {
+            backendUrlInput.type = 'password';
+            toggleBtn.textContent = '👁';
+            if (API_URL) infoBackend.textContent = maskUrl(API_URL);
+        }
     }
 
     function testBackend() {
@@ -232,9 +271,9 @@
             cleanUrl = 'https://' + cleanUrl;
         }
         API_URL = cleanUrl;
-        infoBackend.textContent = API_URL;
+        infoBackend.textContent = isRevealed ? API_URL : maskUrl(API_URL);
         localStorage.setItem('backendUrl', API_URL);
-        addLog('Testing backend: ' + API_URL, 'system');
+        addLog('Testing backend connection', 'system');
         testBtn.textContent = 'Testing...';
         testBtn.disabled = true;
         fetch(API_URL + '/api/health', {
@@ -260,7 +299,7 @@
             testBtn.disabled = false;
             setTimeout(function() {
                 testBtn.className = 'btn btn-test';
-                testBtn.textContent = 'Test Backend Connection';
+                testBtn.textContent = 'Test Backend';
             }, 3000);
         });
         return false;
@@ -313,7 +352,7 @@
         isAttacking = true;
         setButtonLoading(true);
         updateStatus('Attacking...', 'busy');
-        updateInfo({ duration: duration, cookie: cookie, ip_cooldown: 0, ip_banned: 0 });
+        updateInfo({ duration: duration, cookie: cookie, ip_cooldown: 0, ip_banned: 0, backend: API_URL });
         addLog('Mulai attack ke ' + target + ' selama ' + duration + 's', 'success');
         startAttack(target, duration, cookie).then(function(result) {
             addLog('Attack started. ID: ' + (result.id || 'N/A'), 'success');
@@ -341,6 +380,7 @@
     });
 
     testBtn.addEventListener('click', testBackend);
+    toggleBtn.addEventListener('click', toggleReveal);
 
     window.addEventListener('beforeunload', function() {
         if (timerInterval) clearInterval(timerInterval);
@@ -350,7 +390,9 @@
     var savedUrl = localStorage.getItem('backendUrl');
     if (savedUrl) {
         backendUrlInput.value = savedUrl;
-        addLog('Loaded saved backend: ' + savedUrl, 'system');
+        API_URL = savedUrl;
+        infoBackend.textContent = maskUrl(savedUrl);
+        addLog('Loaded saved configuration', 'system');
         setTimeout(testBackend, 500);
     }
     updateLogCount();
